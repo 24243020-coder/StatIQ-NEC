@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>StatIQ – Statistics Calculator | 23AD46C</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:linear-gradient(180deg,#eef1f8 0%,#f7f4ea 100%);min-height:100vh;display:flex;flex-direction:column;color:#1b243f;}
+
+
+/* NEC HEADER */
+.nec-header{
+  background:linear-gradient(135deg,#1a2b5e 0%,#1e3270 60%,#2d4a9e 100%);
+  padding:16px 28px;display:flex;align-items:center;gap:18px;
+  box-shadow:0 3px 14px rgba(0,0,0,0.28);
+  border-bottom:3px solid #c9a84c;
+}
+.nec-logo{
+  width:66px;height:66px;min-width:66px;
+  background:#fff;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  border:2.5px solid #c9a84c;
+  box-shadow:0 0 16px rgba(201,168,76,0.45);
+  overflow:hidden;font-size:9px;font-weight:800;
+  color:#1a2b5e;text-align:center;line-height:1.3;padding:6px;
+}
+.nec-logo img{width:60px;height:60px;object-fit:contain;}
+.nec-info h1{font-size:22px;font-weight:800;color:#fff;letter-spacing:0.2px;}
+.nec-info .loc{font-size:12.5px;color:rgba(255,255,255,0.72);margin-top:2px;}
+.nec-info .dept{font-size:13px;font-weight:700;color:rgba(255,255,255,0.88);margin-top:1px;}
+
+/* NAV */
+.nav{
+  background:#152348;padding:0 18px;
+  display:flex;align-items:center;gap:2px;
+  overflow-x:auto;border-bottom:2px solid rgba(201,168,76,0.25);
+  min-height:44px;
+}
+.nav::-webkit-scrollbar{height:3px;}
+.nav::-webkit-scrollbar-thumb{background:#c9a84c;border-radius:2px;}
+.nav-btn{
+  background:none;border:none;cursor:pointer;
+  padding:9px 13px;color:rgba(255,255,255,0.5);
+  font-size:11.5px;font-weight:600;letter-spacing:0.5px;
+  white-space:nowrap;border-bottom:2px solid transparent;
+  transition:all .2s;text-transform:uppercase;
+}
+.nav-btn:hover{color:#e8c96d;}
+.nav-btn.active{color:#e8c96d;border-bottom-color:#c9a84c;background:rgba(201,168,76,0.1);}
+.nav-spacer{flex:1;min-width:20px;}
+.nav-stats{
+  margin-left:auto;display:flex;align-items:center;gap:10px;
+  padding:6px 0 6px 12px;white-space:nowrap;
+}
+.nav-stat{
+  color:#f8f5e7;font-size:11.5px;font-weight:700;
+  border:1px solid rgba(201,168,76,0.35);
+  background:rgba(201,168,76,0.08);
+  border-radius:999px;padding:6px 10px;
+}
+.like-btn{
+  border:1px solid rgba(201,168,76,0.45);background:rgba(201,168,76,0.12);
+  color:#f3d16b;border-radius:999px;padding:6px 11px;cursor:pointer;
+  font-size:15px;line-height:1;transition:all .2s;
+}
+.like-btn:hover{background:rgba(201,168,76,0.22);transform:translateY(-1px);}
+.like-btn.liked{background:#c9a84c;color:#152348;}
+
+/* MAIN */
+.main{flex:1;padding:20px;max-width:980px;margin:0 auto;width:100%;}
+
+/* SECTION */
+.section{display:none;animation:fadeIn .25s ease;}
+.section.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* PANEL */
+.panel{
+  background:#fff;border-radius:12px;padding:22px 24px;
+  margin-bottom:16px;
+  box-shadow:0 8px 24px rgba(10,31,68,0.10);
+  border:1px solid rgba(201,168,76,0.22);
+}
+.chart-panel{
+  background:linear-gradient(180deg,#ffffff 0%,#fffdf7 100%);
+}
+.chart-wrap{
+  position:relative;
+  width:100%;
+  min-height:320px;
+}
+.chart-wrap canvas{
+  width:100% !important;
+  max-height:360px;
+}
+.panel-title{
+  font-size:15px;font-weight:700;color:#1a2b5e;
+  margin-bottom:14px;display:flex;align-items:center;gap:8px;
+}
+.panel-title span.icon{display:none;}
+
+/* LABEL & INPUT */
+label{display:block;font-size:12.5px;font-weight:600;color:#334;margin-bottom:5px;}
+textarea,input[type=text],input[type=number],select{
+  width:100%;padding:9px 12px;border:1.5px solid #d0d6ec;
+  border-radius:8px;font-size:13px;background:#f8f9ff;
+  transition:border-color .2s;font-family:inherit;
+  resize:vertical;
+}
+textarea:focus,input:focus,select:focus{
+  outline:none;border-color:#c9a84c;background:#fff;
+  box-shadow:0 0 0 3px rgba(201,168,76,0.16);
+}
+
+/* BUTTONS */
+.btn{
+  padding:10px 22px;border:none;border-radius:8px;
+  font-size:13px;font-weight:600;cursor:pointer;
+  transition:all .2s;letter-spacing:0.3px;
+}
+.btn-primary{background:linear-gradient(135deg,#0f2348,#1a2b5e);color:#fff;box-shadow:0 6px 14px rgba(10,31,68,0.18);}
+.btn-primary:hover{background:linear-gradient(135deg,#17305f,#28488e);transform:translateY(-1px);}
+.btn-clear{background:#f0f2fa;color:#556;border:1px solid #dde3f5;}
+.btn-clear:hover{background:#e4e7f5;}
+.btn-row{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;}
+
+/* RESULTS */
+.results{margin-top:16px;}
+.result-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+.metric{
+  background:#f8f9ff;border-radius:9px;padding:12px 16px;
+  min-width:130px;border-left:3px solid #534AB7;
+  border:1px solid #dde3f5;border-left:3px solid #534AB7;
+}
+.metric.gold{border-left-color:#c9a84c;}
+.metric.green{border-left-color:#1d9e75;}
+.metric.red{border-left-color:#e24b4a;}
+.metric-label{font-size:11px;font-weight:600;color:#888;letter-spacing:0.4px;text-transform:uppercase;}
+.metric-value{font-size:20px;font-weight:600;color:#1a2b5e;margin-top:3px;}
+.metric-value.small{font-size:14px;}
+
+/* INFO BOXES */
+.info-box{
+  border-radius:8px;padding:11px 14px;
+  margin-bottom:12px;font-size:13px;line-height:1.7;
+}
+.info-blue{background:#eeeffe;border:1px solid #cecdfc;color:#2d2c8a;}
+.info-green{background:#edfaf4;border:1px solid #9fdfc5;color:#0f5c3f;}
+.info-amber{background:#fdf4e0;border:1px solid #f5d98a;color:#5a3c00;}
+.info-red{background:#fff0f0;border:1px solid #f5c4c4;color:#8b1a1a;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;margin-top:10px;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{background:#f0f2fa;color:#1a2b5e;font-weight:700;padding:8px 12px;text-align:left;font-size:11.5px;letter-spacing:0.4px;}
+td{padding:7px 12px;border-bottom:1px solid #eee;color:#334;}
+tr:hover td{background:#f8f9ff;}
+tr.hl td{background:#fff0f0;color:#e24b4a;}
+
+/* SECTION HEADER */
+.sec-head{
+  font-size:18px;font-weight:800;color:#1a2b5e;
+  margin-bottom:18px;padding-bottom:10px;
+  border-bottom:2px solid #eef0f8;
+  display:flex;align-items:center;gap:10px;
+}
+.sec-head .badge{display:none;}
+
+/* Z-TABLE */
+.ztable-wrap{overflow:auto;max-height:420px;margin-top:10px;}
+.ztable{border-collapse:collapse;font-size:11.5px;width:100%;}
+.ztable th{
+  background:#1a2b5e;color:#e8c96d;
+  padding:6px 10px;position:sticky;top:0;z-index:1;
+  font-size:11px;letter-spacing:0.3px;
+}
+.ztable td{
+  padding:5px 10px;border:1px solid #e0e4f0;
+  text-align:center;color:#334;transition:background .15s;
+}
+.ztable td:hover,.ztable tr:hover td{background:#eef0fb;cursor:pointer;}
+.ztable td.z-row-head{background:#f0f2fa;font-weight:700;color:#1a2b5e;position:sticky;left:0;}
+
+/* T-TABLE */
+.ttable td{text-align:center;}
+.ttable td.df-col{background:#f0f2fa;font-weight:700;color:#1a2b5e;position:sticky;left:0;}
+
+/* FOOTER — NEC style */
+.footer{
+  background:linear-gradient(135deg,#1a2b5e 0%,#1e3270 80%,#2d4a9e 100%);
+  border-top:3px solid #c9a84c;
+  padding:22px 28px;
+  color:#fff;
+}
+.footer-inner{
+  max-width:980px;margin:0 auto;
+  display:flex;flex-direction:column;gap:14px;
+}
+.footer-top{
+  display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;
+}
+.footer-logo{
+  width:52px;height:52px;min-width:52px;
+  background:#fff;border-radius:50%;
+  border:2px solid #c9a84c;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:7px;font-weight:800;color:#1a2b5e;text-align:center;
+}
+.footer-logo img{width:46px;height:46px;object-fit:contain;}
+.footer-course-info{flex:1;}
+.footer-course-info .fc-row{
+  display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;
+}
+.fc-icon{font-size:14px;width:20px;text-align:center;}
+.fc-label{font-size:12px;font-weight:700;color:#e8c96d;}
+.fc-value{font-size:13px;color:rgba(255,255,255,0.88);}
+.footer-divider{border:none;border-top:1px solid rgba(201,168,76,0.25);margin:4px 0;}
+.footer-dev{
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  font-size:12.5px;color:rgba(255,255,255,0.72);
+}
+.footer-dev .dev-label{font-weight:700;color:#e8c96d;}
+.dev-chip{
+  background:rgba(201,168,76,0.15);
+  border:1px solid rgba(201,168,76,0.35);
+  border-radius:20px;padding:2px 10px;
+  font-size:12px;font-weight:600;color:#e8c96d;
+}
+.footer-bottom{
+  text-align:center;
+  font-size:11.5px;color:rgba(255,255,255,0.45);
+  padding-top:8px;border-top:1px solid rgba(255,255,255,0.08);
+}
+.footer-bottom span.gold{color:#c9a84c;font-weight:600;}
+
+
+/* DATA UPLOAD */
+.upload-card{margin-top:14px;border:1.5px dashed #d8c27a;background:#fffaf0;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
+.upload-copy{flex:1;min-width:220px;}
+.upload-copy strong{display:block;color:#8a6a12;font-size:12px;letter-spacing:0.4px;text-transform:uppercase;margin-bottom:4px;}
+.upload-copy span{font-size:13px;color:#5e5b52;}
+.upload-card input[type=file]{max-width:100%;font-size:13px;}
+.small-note{font-size:11.5px;color:#6f7281;margin-top:8px;}
+
+/* TOOLS */
+.utility-fab{position:fixed;right:18px;bottom:18px;display:flex;flex-direction:column;gap:10px;z-index:99;}
+.utility-btn{background:linear-gradient(135deg,#0f2348,#1a2b5e);color:#fff;border:none;border-radius:999px;padding:10px 16px;font-size:12px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(10,31,68,0.22);}
+.utility-btn.alt{background:linear-gradient(135deg,#b8922f,#d4b04a);color:#10264d;}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(9,16,36,0.56);z-index:120;align-items:center;justify-content:center;padding:16px;}
+.modal-overlay.show{display:flex;}
+.modal-card{width:min(680px,100%);max-height:85vh;overflow:auto;background:#fff;border-radius:16px;border:1px solid rgba(201,168,76,0.28);box-shadow:0 18px 40px rgba(0,0,0,0.18);padding:20px;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.modal-head h3{font-size:18px;color:#1a2b5e;}
+.close-btn{background:#f0f2fa;border:1px solid #d8def0;color:#1a2b5e;border-radius:8px;padding:8px 12px;cursor:pointer;font-weight:700;}
+.comment-list,.history-list{display:flex;flex-direction:column;gap:10px;margin-top:12px;}
+.comment-item,.history-item{background:#f8f9ff;border:1px solid #dde3f5;border-radius:10px;padding:12px 14px;}
+.comment-meta,.history-meta{font-size:11px;color:#6b7280;margin-bottom:6px;}
+.comment-text,.history-text{font-size:13px;color:#1f2937;line-height:1.6;}
+.modal-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+.report-btn{margin-top:12px;}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .nec-header{padding:12px 14px;gap:12px;}
+  .nec-logo{width:52px;height:52px;min-width:52px;}
+  .nec-info h1{font-size:17px;}
+  .main{padding:14px 12px;}
+  .panel{padding:16px 14px;}
+  .metric{min-width:100px;}
+  .footer{padding:18px 14px;}
+  .nav-stats{padding-left:6px;gap:6px;}
+  .nav-stat{font-size:10.5px;padding:5px 8px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NEC HEADER -->
+<div class="nec-header">
+  <div class="nec-logo">
+    <img src="assets/images/nec_logo.png" alt="NEC"
+      onerror="this.style.display='none';this.parentNode.innerHTML='NATIONAL<br>ENGG<br>COLLEGE'"/>
+  </div>
+  <div class="nec-info">
+    <h1>National Engineering College</h1>
+    <div class="loc">K.R. Nagar, Kovilpatti &nbsp;|&nbsp; Established: 1984</div>
+    <div class="dept">Department of Artificial Intelligence And Data Science</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+  <button class="nav-btn active" onclick="showSection('freq', this)">Frequency Dist.</button>
+  <button class="nav-btn" onclick="showSection('avg', this)">Averages</button>
+  <button class="nav-btn" onclick="showSection('var', this)">Variability</button>
+  <button class="nav-btn" onclick="showSection('outlier', this)">Outliers</button>
+  <button class="nav-btn" onclick="showSection('normal', this)">Normal Dist.</button>
+  <button class="nav-btn" onclick="showSection('zscore', this)">Z-Scores</button>
+  <button class="nav-btn" onclick="showSection('corr', this)">Correlation</button>
+  <button class="nav-btn" onclick="showSection('reg', this)">Regression</button>
+  <button class="nav-btn" onclick="showSection('ztable', this)">Z-Table</button>
+  <button class="nav-btn" onclick="showSection('ttable', this)">T-Table</button>
+  <div class="nav-spacer"></div>
+  <div class="nav-stats">
+    <div class="nav-stat">Viewed <span id="view-count">0</span></div>
+    <div class="nav-stat">Liked <span id="like-count">0</span></div>
+    <button id="like-btn" class="like-btn" onclick="toggleLike()" title="Like this website">♥</button>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- ── FREQUENCY DISTRIBUTION ── -->
+  <div id="sec-freq" class="section active">
+    <div class="sec-head">Frequency Distribution</div>
+    <div class="panel">
+      <div class="panel-title">Enter Data</div>
+      <label>Data Values (comma or space separated)</label>
+      <textarea id="freq-data" rows="3" placeholder="e.g. 12, 15, 18, 21, 15, 12, 25, 18, 21, 15"></textarea>
+      <div class="upload-card"><div class="upload-copy"><strong>Upload Data File</strong><span>Choose CSV, TXT or PDF to fill the data values automatically.</span></div><input type="file" accept=".csv,.txt,.pdf" onchange="handleSingleFileUpload(event, 'freq-data')"/></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calcFreq()">Calculate</button>
+        <button class="btn btn-clear" onclick="clearSection('freq')">Clear</button>
+      </div>
+    </div>
+    <div id="freq-results" class="results" style="display:none">
+      <div class="panel">
+        <div class="panel-title">Summary</div>
+        <div id="freq-metrics" class="result-grid"></div>
+        <div class="tbl-wrap">
+          <table id="freq-table">
+            <thead><tr>
+              <th>Class Interval</th><th>Frequency</th>
+              <th>Relative Freq (%)</th><th>Cumulative Freq</th><th>Cumulative %</th>
+            </tr></thead>
+            <tbody id="freq-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title">Frequency Graph</div>
+        <div class="chart-wrap"><canvas id="freq-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AVERAGES ── -->
+  <div id="sec-avg" class="section">
+    <div class="sec-head">Measures of Central Tendency</div>
+    <div class="panel">
+      <label>Data Values</label>
+      <textarea id="avg-data" rows="3" placeholder="e.g. 5, 10, 15, 20, 25"></textarea>
+      <div class="upload-card"><div class="upload-copy"><strong>Upload Data File</strong><span>Choose CSV, TXT or PDF to fill the data values automatically.</span></div><input type="file" accept=".csv,.txt,.pdf" onchange="handleSingleFileUpload(event, 'avg-data')"/></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calcAvg()">Calculate</button>
+        <button class="btn btn-clear" onclick="clearSection('avg')">Clear</button>
+      </div>
+    </div>
+    <div id="avg-results" class="results" style="display:none">
+      <div class="panel">
+        <div id="avg-metrics" class="result-grid"></div>
+        <div id="avg-info"></div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title">Average Graph</div>
+        <div class="chart-wrap"><canvas id="avg-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VARIABILITY ── -->
+  <div id="sec-var" class="section">
+    <div class="sec-head">Measures of Variability</div>
+    <div class="panel">
+      <label>Data Values</label>
+      <textarea id="var-data" rows="3" placeholder="e.g. 4, 8, 6, 5, 3, 2, 8, 9, 2, 5"></textarea>
+      <div class="upload-card"><div class="upload-copy"><strong>Upload Data File</strong><span>Choose CSV, TXT or PDF to fill the data values automatically.</span></div><input type="file" accept=".csv,.txt,.pdf" onchange="handleSingleFileUpload(event, 'var-data')"/></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calcVar()">Calculate</button>
+        <button class="btn btn-clear" onclick="clearSection('var')">Clear</button>
+      </div>
+    </div>
+    <div id="var-results" class="results" style="display:none">
+      <div class="panel">
+        <div id="var-metrics" class="result-grid"></div>
+        <div id="var-info"></div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title">Variability Graph</div>
+        <div class="chart-wrap"><canvas id="var-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── OUTLIERS ── -->
+  <div id="sec-outlier" class="section">
+    <div class="sec-head">Outlier Detection (IQR Method)</div>
+    <div class="panel">
+      <label>Data Values</label>
+      <textarea id="outlier-data" rows="3" placeholder="e.g. 2, 3, 4, 5, 6, 100, 3, 4, 5, 3"></textarea>
+      <div class="upload-card"><div class="upload-copy"><strong>Upload Data File</strong><span>Choose CSV, TXT or PDF to fill the data values automatically.</span></div><input type="file" accept=".csv,.txt,.pdf" onchange="handleSingleFileUpload(event, 'outlier-data')"/></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calcOutlier()">Detect Outliers</button>
+        <button class="btn btn-clear" onclick="clearSection('outlier')">Clear</button>
+      </div>
+    </div>
+    <div id="outlier-results" class="results" style="display:none">
+      <div class="panel">
+        <div id="outlier-metrics" class="result-grid"></div>
+        <div id="outlier-info"></div>
+        <div id="outlier-list"></div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title">Outlier Graph</div>
+        <div class="chart-wrap"><canvas id="outlier-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── NORMAL DISTRIBUTION ── -->
+  <div id="sec-normal" class="section">
+    <div class="sec-head">Normal Distribution Calculator</div>
+    <div class="panel">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
+        <div><label>Population Mean (μ)</label><input type="number" id="norm-mean" placeholder="e.g. 50"/></div>
+        <div><label>Std Deviation (σ)</label><input type="number" id="norm-sd" placeholder="e.g. 10"/></div>
+        <div><label>X Value</label><input type="number" id="norm-x" placeholder="e.g. 65"/></div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calcNormal()">Calculate</button>
+        <button class="btn btn-clear" onclick="clearSection('normal')">Clear</button>
+      </div>
+    </div>
+    <div id="normal-results" class="results" style="display:none">
+      <div class="panel">
+        <div id="normal-metrics" class="result-grid"></div>
+        <div id="normal-info"></div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title">Normal Distribution Graph</div>
+        <div class="chart-wrap"><canvas id="normal-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Z-SCORES ── -->
+  <div id="sec-zscore" class="section">
+    <div class="sec-head">Z-Score Calculator</div>
+    <div class="panel">
+      <label>Data Values</label>
+      <textarea id="zscore-data" rows="3" placeholder="e.g. 60, 72, 55, 83, 68, 74"></textarea>
+      <div class="upload-card"><div class="upload-copy"><strong>Upload Data File</strong><span>Choose CSV, TXT or PDF to fill the data values automatically.</span></div><input type="file" accept=".csv,.txt,.pdf" onchange="handleSingleFileUpload(event, 'zscore-data')"/></div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calcZscore()">Calculate Z-Scores</button>
+        <button class="btn btn-clear" onclick="clearSection('zscore')">Clear</button>
+      </div>
+    </div>
+    <div id="zscore-results" class="results" style="display:none">
+      <div class="panel">
+        <div id="zscore-metrics" class="result-grid"></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>#</th><th>Value (X)</th><th>Z-Score</th><th>Interpretation</th></tr></thead>
+            <tbody id="zscore-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title">Z-Score Graph</div>
+        <div class="chart-wrap"><canvas id="zscore-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── CORRELATION ── -->
+  <div id="sec-corr" class="section">
+    <div class="sec-head">Correlation Analysis</div>
+    <div class="panel">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div><label>X Values</label><textarea id="corr-x" rows="3" placeholder="e.g. 1, 2, 3, 4, 5"></textarea></div>
+        <div><label>Y Values</label><textarea id="corr-y" rows="3" placeholder="e.g. 2, 4, 5, 4, 5"></textarea></div>
+      </div>
+      <div class="upload-card"><div class="upload-copy"><strong>Upload Two-Column CSV</strong><span>First column fills X values and second column fills Y values.</span></div><input type="file" accept=".csv,.txt" onchange="handlePairFileUpload(event, 'corr-x', 'corr-y')"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calcCorr()">Calculate</button>
+        <button class="btn btn-clear" onclick="clearSection('corr')">Clear</button>
+      </div>
+    </div>
+    <div id="corr-results" class="results" style="display:none">
+      <div class="panel">
+        <div id="corr-metrics" class="result-grid"></div>
+        <div id="corr-info"></div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title">Correlation Graph</div>
+        <div class="chart-wrap"><canvas id="corr-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── REGRESSION ── -->
+  <div id="sec-reg" class="section">
+    <div class="sec-head">Linear Regression</div>
+    <div class="panel">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div><label>X Values (Independent)</label><textarea id="reg-x" rows="3" placeholder="e.g. 1, 2, 3, 4, 5"></textarea></div>
+        <div><label>Y Values (Dependent)</label><textarea id="reg-y" rows="3" placeholder="e.g. 2.1, 3.9, 6.0, 8.2, 9.8"></textarea></div>
+      </div>
+      <div class="upload-card"><div class="upload-copy"><strong>Upload Two-Column CSV</strong><span>First column fills X values and second column fills Y values.</span></div><input type="file" accept=".csv,.txt" onchange="handlePairFileUpload(event, 'reg-x', 'reg-y')"/></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="calcReg()">Calculate</button>
+        <button class="btn btn-clear" onclick="clearSection('reg')">Clear</button>
+      </div>
+    </div>
+    <div id="reg-results" class="results" style="display:none">
+      <div class="panel">
+        <div id="reg-metrics" class="result-grid"></div>
+        <div id="reg-info"></div>
+        <div class="tbl-wrap" id="reg-table-wrap" style="display:none">
+          <table>
+            <thead><tr><th>X</th><th>Y</th><th>Ŷ (Predicted)</th><th>Residual</th></tr></thead>
+            <tbody id="reg-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel chart-panel">
+        <div class="panel-title">Regression Graph</div>
+        <div class="chart-wrap"><canvas id="reg-chart"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Z-TABLE ── -->
+  <div id="sec-ztable" class="section">
+    <div class="sec-head">Standard Normal (Z) Table</div>
+    <div class="panel">
+      <div class="info-box info-blue">
+        Click any cell to see the cumulative probability P(Z ≤ z). Values represent the area to the LEFT of z.
+      </div>
+      <div id="ztable-highlight" class="info-box info-amber" style="display:none"></div>
+      <div class="ztable-wrap">
+        <table class="ztable" id="ztable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── T-TABLE ── -->
+  <div id="sec-ttable" class="section">
+    <div class="sec-head">Student's t-Distribution Table</div>
+    <div class="panel">
+      <div class="info-box info-blue">
+        Critical values of t for selected degrees of freedom (df) and significance levels (α). Two-tailed values shown.
+      </div>
+      <div class="tbl-wrap">
+        <table class="ztable ttable" id="ttable"></table>
+      </div>
+    </div>
+  </div>
+
+
+</div><!-- /main -->
+
+<div class="utility-fab">
+  <button class="utility-btn" onclick="openModal('comment-modal')">Feedback</button>
+  <button class="utility-btn alt" onclick="openHistoryModal()">Report</button>
+</div>
+
+<div id="comment-modal" class="modal-overlay" onclick="overlayClose(event,'comment-modal')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Feedback</h3>
+      <button class="close-btn" onclick="closeModal('comment-modal')">Close</button>
+    </div>
+    <div class="info-box info-blue">Your feedback will be saved here and also sent to the project email inbox.</div>
+    <label>Your Name</label>
+    <input type="text" id="comment-name" placeholder="Enter your name"/>
+    <label style="margin-top:10px;">Your Feedback</label>
+    <textarea id="comment-text" rows="4" placeholder="Share your feedback about this website"></textarea>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="submitComment()">Submit Feedback</button>
+      <button class="btn btn-clear" onclick="clearCommentForm()">Clear</button>
+    </div>
+    <div id="comment-list" class="comment-list"></div>
+  </div>
+</div>
+
+<div id="history-modal" class="modal-overlay" onclick="overlayClose(event,'history-modal')">
+  <div class="modal-card">
+    <div class="modal-head">
+      <h3>Calculation History & PDF Report</h3>
+      <button class="close-btn" onclick="closeModal('history-modal')">Close</button>
+    </div>
+    <div class="info-box info-blue">Every calculation is saved in browser history. Download PDF Report to save results and the currently visible graph.</div>
+    <div id="history-list" class="history-list"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" onclick="downloadHistoryPdf()">Download PDF Report</button>
+      <button class="btn btn-clear" onclick="clearHistory()">Clear History</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-logo">
+        <img src="assets/images/nec_logo.png" alt="NEC"
+          onerror="this.style.display='none';this.parentNode.innerHTML='NEC'"/>
+      </div>
+      <div class="footer-course-info">
+        <div class="fc-row">
+          <span class="fc-label">Course :</span>
+          <span class="fc-value">Fundamentals of Data Science and Analytics – 23AD46C</span>
+        </div>
+        <div class="fc-row">
+          <span class="fc-label">Course Instructor :</span>
+          <span class="fc-value">Dr. J. Naskath , Associate Professor</span>
+        </div>
+        <div class="fc-row">
+          <span class="fc-label">Department :</span>
+          <span class="fc-value">Artificial Intelligence &amp; Data Science</span>
+        </div>
+        <div class="fc-row">
+          <span class="fc-label">Academic Year :</span>
+          <span class="fc-value">2024–2028</span>
+        </div>
+      </div>
+    </div>
+
+    <hr class="footer-divider"/>
+
+    <div class="footer-dev">
+      <span class="dev-label">Developed by :</span>
+      <span class="dev-chip">Harshitha A</span>
+      <span class="dev-chip">Kayal Vili R K</span>
+      <span class="dev-chip">Divya Darshini S</span>
+      <span class="dev-chip">Khiruthika Sundari S</span>
+    </div>
+
+    <div class="footer-bottom">
+      © 2026 &nbsp;|&nbsp; StatIQ · National Engineering College · K.R. Nagar, Kovilpatti
+    </div>
+  </div>
+</footer>
+
+<script>
+const API = '';  // backend optional
+const charts = {};
+const palette = {
+  navy:'#10264d',
+  navy2:'#1a2b5e',
+  gold:'#c9a84c',
+  goldSoft:'rgba(201,168,76,0.25)',
+  red:'#c94c4c',
+  green:'#198754'
+};
+
+const FEEDBACK_EMAIL = '24243020@nec.edu.in';
+
+async function sendFeedbackEmail(name, text, submittedAt) {
+  const res = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(FEEDBACK_EMAIL)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body: JSON.stringify({
+      name,
+      message: text,
+      submitted_at: submittedAt,
+      source: 'StatiQ Website Feedback',
+      _subject: 'New StatiQ Feedback',
+      _captcha: 'false',
+      _template: 'table'
+    })
+  });
+  if (!res.ok) throw new Error('Feedback email failed');
+  return res.json();
+}
+
+// ── Local calculation engine so project works in Live Server too ──
+function parseData(input) {
+  if (Array.isArray(input)) return input.map(Number).filter(n => !isNaN(n));
+  return String(input).split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
+}
+function sorted(data) { return [...data].sort((a,b)=>a-b); }
+function mean(data) { return data.reduce((a,b)=>a+b,0)/data.length; }
+function median(data) {
+  const s = sorted(data), n = s.length;
+  return n % 2 === 0 ? (s[n/2-1] + s[n/2]) / 2 : s[Math.floor(n/2)];
+}
+function mode(data) {
+  const freq = {};
+  data.forEach(v => freq[v] = (freq[v] || 0) + 1);
+  const max = Math.max(...Object.values(freq));
+  return Object.entries(freq).filter(([,v]) => v === max).map(([k]) => Number(k));
+}
+function variance(data, sample=true) {
+  const m = mean(data);
+  const sum = data.reduce((a,b)=>a + (b-m)**2, 0);
+  return sum / (sample ? data.length - 1 : data.length);
+}
+function stdDev(data, sample=true) { return Math.sqrt(variance(data, sample)); }
+function percentile(s, p) {
+  const idx = (p/100) * (s.length - 1), lo = Math.floor(idx), hi = Math.ceil(idx);
+  return s[lo] + (idx - lo) * (s[hi] - s[lo]);
+}
+function iqrFences(data) {
+  const s = sorted(data), q1 = percentile(s,25), q3 = percentile(s,75), iqr = q3 - q1;
+  return { q1, q3, iqr, lo: q1 - 1.5 * iqr, hi: q3 + 1.5 * iqr };
+}
+function skewness(data) {
+  const m = mean(data), sd = stdDev(data), n = data.length;
+  return data.reduce((a,b)=>a + ((b-m)/sd)**3, 0) / n;
+}
+function kurtosis(data) {
+  const m = mean(data), sd = stdDev(data), n = data.length;
+  return data.reduce((a,b)=>a + ((b-m)/sd)**4, 0) / n - 3;
+}
+function frequencyDist(data) {
+  const s = sorted(data), n = s.length;
+  const bins = Math.max(5, Math.min(15, Math.round(1 + 3.322 * Math.log10(n))));
+  const min = s[0], max = s[n-1], bw = (max - min) / bins || 1;
+  const edges = Array.from({ length: bins + 1 }, (_,i) => min + i * bw);
+  const counts = new Array(bins).fill(0);
+  data.forEach(v => { const i = Math.min(bins - 1, Math.floor((v - min) / bw)); counts[i]++; });
+  let cum = 0;
+  const table = counts.map((c,i) => {
+    cum += c;
+    return {
+      interval: `${edges[i].toFixed(2)} – ${edges[i+1].toFixed(2)}`,
+      from: edges[i], to: edges[i+1], frequency: c,
+      relativeFreq: +(c / n * 100).toFixed(2), cumulativeFreq: cum,
+      cumulativePct: +(cum / n * 100).toFixed(2)
+    };
+  });
+  return { bins: table, binWidth: bw, min, max, n };
+}
+function zScore(value, m, sd) { return (value - m) / sd; }
+function normalPDFValue(z) { return Math.exp(-0.5 * z * z) / Math.sqrt(2 * Math.PI); }
+function pearsonR(x, y) {
+  const mx = mean(x), my = mean(y);
+  const num = x.reduce((a,xi,i)=>a + (xi-mx) * (y[i]-my), 0);
+  const den = Math.sqrt(x.reduce((a,xi)=>a + (xi-mx)**2,0) * y.reduce((a,yi)=>a + (yi-my)**2,0));
+  return den === 0 ? 0 : num / den;
+}
+function spearmanR(x, y) {
+  const rank = arr => {
+    const s = [...arr].map((v,i)=>({v,i})).sort((a,b)=>a.v-b.v);
+    const r = new Array(arr.length);
+    s.forEach((item, idx) => { r[item.i] = idx + 1; });
+    return r;
+  };
+  return pearsonR(rank(x), rank(y));
+}
+function linearRegression(x, y) {
+  const n = x.length, mx = mean(x), my = mean(y);
+  const slope = x.reduce((a,xi,i)=>a + (xi-mx) * (y[i]-my), 0) / x.reduce((a,xi)=>a + (xi-mx)**2, 0);
+  const intercept = my - slope * mx;
+  const predicted = x.map(xi => slope * xi + intercept);
+  const residuals = y.map((yi,i) => yi - predicted[i]);
+  const ssTot = y.reduce((a,yi)=>a + (yi-my)**2, 0);
+  const ssRes = residuals.reduce((a,r)=>a + r*r, 0);
+  const r2 = 1 - ssRes / ssTot;
+  const see = Math.sqrt(ssRes / (n - 2));
+  return { slope, intercept, r2, r: pearsonR(x,y), see, predicted, residuals };
+}
+function localCompute(endpoint, body) {
+  try {
+    if (endpoint === 'frequency') {
+      const data = parseData(body.data);
+      if (data.length < 2) return { success:false, error:'Need at least 2 values' };
+      return { success:true, ...frequencyDist(data) };
+    }
+    if (endpoint === 'averages') {
+      const data = parseData(body.data); if (!data.length) return { success:false, error:'No valid numbers' };
+      const s = sorted(data), { q1, q3, iqr } = iqrFences(data);
+      return { success:true, n:data.length, mean:+mean(data).toFixed(6), median:+median(data).toFixed(6), mode:mode(data), min:s[0], max:s[s.length-1], range:+(s[s.length-1]-s[0]).toFixed(6), q1:+q1.toFixed(6), q3:+q3.toFixed(6), iqr:+iqr.toFixed(6) };
+    }
+    if (endpoint === 'variability') {
+      const data = parseData(body.data); if (data.length < 2) return { success:false, error:'Need at least 2 values' };
+      return { success:true, n:data.length, mean:+mean(data).toFixed(6), variance_s:+variance(data,true).toFixed(6), variance_p:+variance(data,false).toFixed(6), std_dev_s:+stdDev(data,true).toFixed(6), std_dev_p:+stdDev(data,false).toFixed(6), cv:+(stdDev(data,true)/mean(data)*100).toFixed(4), skewness:+skewness(data).toFixed(6), kurtosis:+kurtosis(data).toFixed(6) };
+    }
+    if (endpoint === 'outliers') {
+      const data = parseData(body.data); if (data.length < 4) return { success:false, error:'Need at least 4 values' };
+      const { q1, q3, iqr, lo, hi } = iqrFences(data);
+      const outliers = data.filter(v => v < lo || v > hi), clean = data.filter(v => v >= lo && v <= hi);
+      return { success:true, q1:+q1.toFixed(4), q3:+q3.toFixed(4), iqr:+iqr.toFixed(4), lower_fence:+lo.toFixed(4), upper_fence:+hi.toFixed(4), outliers, clean_data:clean, outlier_count:outliers.length };
+    }
+    if (endpoint === 'normal') {
+      const mu = Number(body.mean), sig = Number(body.sd), x = Number(body.value);
+      if (isNaN(mu) || isNaN(sig) || isNaN(x) || sig <= 0) return { success:false, error:'Invalid parameters' };
+      const z = zScore(x, mu, sig), cdf = normalCDF(z);
+      return { success:true, z:+z.toFixed(6), pdf:+(normalPDFValue(z)/sig).toFixed(6), cdf_left:+cdf.toFixed(6), cdf_right:+(1-cdf).toFixed(6), percentile:+(cdf*100).toFixed(4) };
+    }
+    if (endpoint === 'zscores') {
+      const data = parseData(body.data); if (data.length < 2) return { success:false, error:'Need at least 2 values' };
+      const m = mean(data), sd = stdDev(data);
+      return { success:true, mean:+m.toFixed(6), std_dev:+sd.toFixed(6), z_scores:data.map(v => +zScore(v,m,sd).toFixed(6)), data };
+    }
+    if (endpoint === 'correlation') {
+      const x = parseData(body.x), y = parseData(body.y);
+      if (x.length !== y.length || x.length < 3) return { success:false, error:'x and y must be equal length ≥ 3' };
+      const r = pearsonR(x, y), n = x.length;
+      return { success:true, n, pearson_r:+r.toFixed(6), spearman_r:+spearmanR(x,y).toFixed(6), r_squared:+(r*r).toFixed(6), t_stat:+(r*Math.sqrt((n-2)/(1-r*r))).toFixed(6) };
+    }
+    if (endpoint === 'regression') {
+      const x = parseData(body.x), y = parseData(body.y);
+      if (x.length !== y.length || x.length < 3) return { success:false, error:'x and y must be equal length ≥ 3' };
+      const r = linearRegression(x, y);
+      return { success:true, slope:+r.slope.toFixed(6), intercept:+r.intercept.toFixed(6), r:+r.r.toFixed(6), r2:+r.r2.toFixed(6), see:+r.see.toFixed(6), predicted:r.predicted.map(v=>+v.toFixed(4)), residuals:r.residuals.map(v=>+v.toFixed(4)) };
+    }
+    return { success:false, error:'Unsupported calculation' };
+  } catch (err) {
+    return { success:false, error:err.message || 'Calculation failed' };
+  }
+}
+
+// ── Navigation ───────────────────────────────────────────────
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+// ── Helpers ──────────────────────────────────────────────────
+function metric(label, value, cls='') {
+  const small = String(value).length > 8 ? ' small' : '';
+  return `<div class="metric ${cls}"><div class="metric-label">${label}</div><div class="metric-value${small}">${value}</div></div>`;
+}
+function infoBox(cls, html) { return `<div class="info-box ${cls}">${html}</div>`; }
+async function post(endpoint, body) {
+  try {
+    const res = await fetch(API + '/api/' + endpoint, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body)
+    });
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || !contentType.includes('application/json')) throw new Error('Backend unavailable');
+    return await res.json();
+  } catch (err) {
+    return localCompute(endpoint, body);
+  }
+}
+function clearSection(id) {
+  document.querySelectorAll(`#sec-${id} textarea, #sec-${id} input`).forEach(el => el.value='');
+  const res = document.getElementById(`${id}-results`);
+  if (res) res.style.display='none';
+  const chartMap = {freq:'freq-chart',avg:'avg-chart',var:'var-chart',outlier:'outlier-chart',normal:'normal-chart',zscore:'zscore-chart',corr:'corr-chart',reg:'reg-chart'};
+  if (chartMap[id]) destroyChart(chartMap[id]);
+}
+function fmt(n) { return typeof n==='number' ? (Number.isInteger(n)?n:n.toFixed(4)) : n; }
+function destroyChart(id) {
+  if (charts[id]) { charts[id].destroy(); delete charts[id]; }
+}
+function createChart(id, config) {
+  destroyChart(id);
+  const canvas = document.getElementById(id);
+  if (!canvas) return null;
+  const ctx = canvas.getContext('2d');
+  charts[id] = new Chart(ctx, config);
+  return charts[id];
+}
+function chartOptions(title) {
+  return {
+    responsive:true,
+    maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:palette.navy}},
+      title:{display:!!title,text:title,color:palette.navy,font:{weight:'bold',size:14}}
+    },
+    scales:{
+      x:{ticks:{color:palette.navy}, grid:{color:'rgba(16,38,77,0.08)'}},
+      y:{ticks:{color:palette.navy}, grid:{color:'rgba(16,38,77,0.08)'}}
+    }
+  };
+}
+function generateNormalCurve(mean, sd, points=121) {
+  const xs = [], ys = [];
+  const start = mean - 4*sd, end = mean + 4*sd, step = (end-start)/(points-1);
+  for (let i=0;i<points;i++) {
+    const x = start + step*i;
+    const z = (x-mean)/sd;
+    const y = Math.exp(-0.5*z*z)/(sd*Math.sqrt(2*Math.PI));
+    xs.push(+x.toFixed(2)); ys.push(y);
+  }
+  return {xs, ys};
+}
+
+// ── FREQUENCY ────────────────────────────────────────────────
+async function calcFreq() {
+  const data = document.getElementById('freq-data').value.trim();
+  if (!data) return alert('Please enter data values.');
+  const res = await post('frequency', {data});
+  if (!res.success) return alert(res.error);
+  const r = document.getElementById('freq-results');
+  r.style.display='block';
+  document.getElementById('freq-metrics').innerHTML =
+    metric('N (Count)', res.n) +
+    metric('Min', fmt(res.min)) +
+    metric('Max', fmt(res.max)) +
+    metric('Bin Width', fmt(res.binWidth), 'gold');
+  const tb = document.getElementById('freq-tbody');
+  tb.innerHTML = res.bins.map(b =>
+    `<tr><td>${b.interval}</td><td>${b.frequency}</td><td>${b.relativeFreq}%</td><td>${b.cumulativeFreq}</td><td>${b.cumulativePct}%</td></tr>`
+  ).join('');
+  createChart('freq-chart', {
+    type:'bar',
+    data:{
+      labels:res.bins.map(b=>b.interval),
+      datasets:[
+        {label:'Frequency', data:res.bins.map(b=>b.frequency), backgroundColor:palette.goldSoft, borderColor:palette.gold, borderWidth:2},
+        {label:'Cumulative Frequency', data:res.bins.map(b=>b.cumulativeFreq), type:'line', borderColor:palette.navy2, backgroundColor:palette.navy2, tension:0.25, yAxisID:'y1'}
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:palette.navy}}, title:{display:true, text:'Frequency Distribution Graph', color:palette.navy, font:{weight:'bold',size:14}}},
+      scales:{
+        x:{ticks:{color:palette.navy}, grid:{color:'rgba(16,38,77,0.08)'}},
+        y:{ticks:{color:palette.navy}, grid:{color:'rgba(16,38,77,0.08)'}, beginAtZero:true},
+        y1:{position:'right', ticks:{color:palette.gold}, grid:{drawOnChartArea:false}, beginAtZero:true}
+      }
+    }
+  });
+  await addHistory('Frequency Distribution', data, `Count = ${res.n}, Min = ${fmt(res.min)}, Max = ${fmt(res.max)}, Bin Width = ${fmt(res.binWidth)}`, 'freq-chart');
+}
+
+// ── AVERAGES ─────────────────────────────────────────────────
+async function calcAvg() {
+  const data = document.getElementById('avg-data').value.trim();
+  if (!data) return alert('Please enter data values.');
+  const res = await post('averages', {data});
+  if (!res.success) return alert(res.error);
+  document.getElementById('avg-results').style.display='block';
+  document.getElementById('avg-metrics').innerHTML =
+    metric('Mean', fmt(res.mean), 'gold') +
+    metric('Median', fmt(res.median)) +
+    metric('Mode', Array.isArray(res.mode)?res.mode.join(', '):res.mode) +
+    metric('N', res.n) +
+    metric('Min', fmt(res.min)) +
+    metric('Max', fmt(res.max)) +
+    metric('Range', fmt(res.range)) +
+    metric('Q1', fmt(res.q1),'green') +
+    metric('Q3', fmt(res.q3),'green') +
+    metric('IQR', fmt(res.iqr),'green');
+  const modeNote = Array.isArray(res.mode) && res.mode.length > 1
+    ? `Multimodal distribution — modes: ${res.mode.join(', ')}`
+    : `The mode is ${Array.isArray(res.mode)?res.mode[0]:res.mode}`;
+  document.getElementById('avg-info').innerHTML =
+    infoBox('info-blue', `<b>Mean = ${fmt(res.mean)}</b> — the arithmetic average of all ${res.n} values.`) +
+    infoBox('info-green', `<b>Median = ${fmt(res.median)}</b> — the middle value when sorted.`) +
+    infoBox('info-amber', `<b>${modeNote}</b>`);
+  const modeValue = Array.isArray(res.mode) ? res.mode[0] : res.mode;
+  createChart('avg-chart', {
+    type:'bar',
+    data:{
+      labels:['Mean','Median','Mode','Q1','Q3'],
+      datasets:[{label:'Value', data:[res.mean,res.median,modeValue,res.q1,res.q3], backgroundColor:[palette.goldSoft,palette.goldSoft,palette.goldSoft,'rgba(25,135,84,0.18)','rgba(25,135,84,0.18)'], borderColor:[palette.gold,palette.gold,palette.gold,palette.green,palette.green], borderWidth:2}]
+    },
+    options: chartOptions('Measures of Central Tendency')
+  });
+  await addHistory('Averages', data, `Mean = ${fmt(res.mean)}, Median = ${fmt(res.median)}, Mode = ${Array.isArray(res.mode)?res.mode.join(', '):res.mode}`, 'avg-chart');
+}
+
+// ── VARIABILITY ──────────────────────────────────────────────
+async function calcVar() {
+  const data = document.getElementById('var-data').value.trim();
+  if (!data) return alert('Please enter data values.');
+  const res = await post('variability', {data});
+  if (!res.success) return alert(res.error);
+  document.getElementById('var-results').style.display='block';
+  const skewDesc = res.skewness > 0.5 ? 'Positively skewed (right tail)' :
+                   res.skewness < -0.5 ? 'Negatively skewed (left tail)' : 'Approximately symmetric';
+  document.getElementById('var-metrics').innerHTML =
+    metric('Std Dev (s)', fmt(res.std_dev_s), 'gold') +
+    metric('Std Dev (σ)', fmt(res.std_dev_p)) +
+    metric('Variance (s²)', fmt(res.variance_s)) +
+    metric('Variance (σ²)', fmt(res.variance_p)) +
+    metric('CV (%)', fmt(res.cv),'green') +
+    metric('Skewness', fmt(res.skewness)) +
+    metric('Kurtosis', fmt(res.kurtosis));
+  document.getElementById('var-info').innerHTML =
+    infoBox('info-blue', `<b>CV = ${fmt(res.cv)}%</b> — Coefficient of Variation measures relative spread.`) +
+    infoBox('info-amber', `<b>Skewness = ${fmt(res.skewness)}</b> — ${skewDesc}.`);
+  createChart('var-chart', {
+    type:'bar',
+    data:{
+      labels:['Variance (s²)','Variance (σ²)','Std Dev (s)','Std Dev (σ)','CV %','Skewness','Kurtosis'],
+      datasets:[{label:'Statistic', data:[res.variance_s,res.variance_p,res.std_dev_s,res.std_dev_p,res.cv,res.skewness,res.kurtosis], backgroundColor:['rgba(201,168,76,0.25)','rgba(201,168,76,0.18)','rgba(16,38,77,0.18)','rgba(16,38,77,0.12)','rgba(25,135,84,0.18)','rgba(201,76,76,0.16)','rgba(201,76,76,0.22)'], borderColor:[palette.gold,palette.gold,palette.navy,palette.navy,palette.green,palette.red,palette.red], borderWidth:2}]
+    },
+    options: chartOptions('Measures of Variability')
+  });
+  await addHistory('Variability', data, `Std Dev = ${fmt(res.std_dev_s)}, Variance = ${fmt(res.variance_s)}, CV = ${fmt(res.cv)}%`, 'var-chart');
+}
+
+// ── OUTLIERS ─────────────────────────────────────────────────
+async function calcOutlier() {
+  const data = document.getElementById('outlier-data').value.trim();
+  if (!data) return alert('Please enter data values.');
+  const res = await post('outliers', {data});
+  if (!res.success) return alert(res.error);
+  document.getElementById('outlier-results').style.display='block';
+  document.getElementById('outlier-metrics').innerHTML =
+    metric('Q1', fmt(res.q1)) +
+    metric('Q3', fmt(res.q3)) +
+    metric('IQR', fmt(res.iqr), 'gold') +
+    metric('Lower Fence', fmt(res.lower_fence), 'red') +
+    metric('Upper Fence', fmt(res.upper_fence), 'red') +
+    metric('Outliers Found', res.outlier_count, res.outlier_count>0?'red':'green');
+  document.getElementById('outlier-info').innerHTML = res.outlier_count > 0
+    ? infoBox('info-red', `<b>${res.outlier_count} outlier(s) detected:</b> ${res.outliers.join(', ')} — values outside [${fmt(res.lower_fence)}, ${fmt(res.upper_fence)}].`)
+    : infoBox('info-green', `<b>No outliers detected.</b> All values fall within the IQR fences [${fmt(res.lower_fence)}, ${fmt(res.upper_fence)}].`);
+  document.getElementById('outlier-list').innerHTML = res.outlier_count > 0
+    ? infoBox('info-blue', `<b>Clean data (${res.clean_data.length} values):</b> ${res.clean_data.join(', ')}`) : '';
+  const sortedAll = [...res.clean_data, ...res.outliers].sort((a,b)=>a-b);
+  createChart('outlier-chart', {
+    type:'bar',
+    data:{
+      labels:sortedAll.map((_,i)=>'Value '+(i+1)),
+      datasets:[{
+        label:'Data Values',
+        data:sortedAll,
+        backgroundColor:sortedAll.map(v => (res.outliers.includes(v) ? 'rgba(201,76,76,0.22)' : 'rgba(16,38,77,0.14)')),
+        borderColor:sortedAll.map(v => (res.outliers.includes(v) ? palette.red : palette.navy)),
+        borderWidth:2
+      }]
+    },
+    options: chartOptions('Outlier Detection Graph')
+  });
+  await addHistory('Outliers', data, `Q1 = ${fmt(res.q1)}, Q3 = ${fmt(res.q3)}, IQR = ${fmt(res.iqr)}, Outliers = ${res.outliers.length ? res.outliers.join(', ') : 'None'}`, 'outlier-chart');
+}
+
+// ── NORMAL DIST ──────────────────────────────────────────────
+async function calcNormal() {
+  const mean = document.getElementById('norm-mean').value;
+  const sd   = document.getElementById('norm-sd').value;
+  const x    = document.getElementById('norm-x').value;
+  if (!mean||!sd||!x) return alert('Please fill all three fields.');
+  const res = await post('normal', {mean,sd,value:x});
+  if (!res.success) return alert(res.error);
+  document.getElementById('normal-results').style.display='block';
+  document.getElementById('normal-metrics').innerHTML =
+    metric('Z-Score', fmt(res.z), 'gold') +
+    metric('PDF f(x)', fmt(res.pdf)) +
+    metric('P(X ≤ x)', fmt(res.cdf_left), 'green') +
+    metric('P(X > x)', fmt(res.cdf_right), 'red') +
+    metric('Percentile', fmt(res.percentile)+'th', 'gold');
+  document.getElementById('normal-info').innerHTML =
+    infoBox('info-blue', `For X = ${x} with μ = ${mean} and σ = ${sd}: <b>Z = ${fmt(res.z)}</b>`) +
+    infoBox('info-green', `<b>P(X ≤ ${x}) = ${fmt(res.cdf_left)}</b> — ${(res.cdf_left*100).toFixed(2)}% of data falls at or below this value.`) +
+    infoBox('info-amber', `<b>P(X > ${x}) = ${fmt(res.cdf_right)}</b> — ${(res.cdf_right*100).toFixed(2)}% of data exceeds this value.`);
+  const curve = generateNormalCurve(Number(mean), Number(sd));
+  createChart('normal-chart', {
+    type:'line',
+    data:{
+      labels:curve.xs,
+      datasets:[
+        {label:'Normal Curve', data:curve.ys, borderColor:palette.navy, backgroundColor:'rgba(16,38,77,0.08)', tension:0.25, fill:true, pointRadius:0},
+        {label:'Selected X', data:curve.xs.map(v => Math.abs(v-Number(x))<((curve.xs[1]-curve.xs[0])/2)?Math.max(...curve.ys):null), borderColor:palette.gold, pointBackgroundColor:palette.gold, showLine:false, pointRadius:5}
+      ]
+    },
+    options: chartOptions('Normal Distribution Curve')
+  });
+  await addHistory('Normal Distribution', `μ=${mean}, σ=${sd}, X=${x}`, `Z = ${fmt(res.z)}, P(X≤x) = ${fmt(res.cdf_left)}, Percentile = ${fmt(res.percentile)}`, 'normal-chart');
+}
+
+// ── Z-SCORES ─────────────────────────────────────────────────
+async function calcZscore() {
+  const data = document.getElementById('zscore-data').value.trim();
+  if (!data) return alert('Please enter data values.');
+  const res = await post('zscores', {data});
+  if (!res.success) return alert(res.error);
+  document.getElementById('zscore-results').style.display='block';
+  document.getElementById('zscore-metrics').innerHTML =
+    metric('Mean', fmt(res.mean), 'gold') +
+    metric('Std Dev', fmt(res.std_dev));
+  const tb = document.getElementById('zscore-tbody');
+  tb.innerHTML = res.data.map((v,i) => {
+    const z = res.z_scores[i];
+    const interp = z > 2 ? 'Far above mean' : z < -2 ? 'Far below mean' :
+                   z > 1 ? 'Above mean' : z < -1 ? 'Below mean' : 'Near mean';
+    return `<tr><td>${i+1}</td><td>${v}</td><td><b>${fmt(z)}</b></td><td>${interp}</td></tr>`;
+  }).join('');
+  createChart('zscore-chart', {
+    type:'line',
+    data:{
+      labels:res.data.map((_,i)=>'X'+(i+1)),
+      datasets:[
+        {label:'Original Values', data:res.data, borderColor:palette.gold, backgroundColor:'rgba(201,168,76,0.22)', tension:0.25},
+        {label:'Z-Scores', data:res.z_scores, borderColor:palette.navy, backgroundColor:'rgba(16,38,77,0.14)', tension:0.25}
+      ]
+    },
+    options: chartOptions('Z-Score Graph')
+  });
+  await addHistory('Z-Scores', data, `Mean = ${fmt(res.mean)}, Std Dev = ${fmt(res.std_dev)}, First Z = ${res.z_scores.length?fmt(res.z_scores[0]):'-'}`, 'zscore-chart');
+}
+
+// ── CORRELATION ──────────────────────────────────────────────
+async function calcCorr() {
+  const x = document.getElementById('corr-x').value.trim();
+  const y = document.getElementById('corr-y').value.trim();
+  if (!x||!y) return alert('Please enter both X and Y values.');
+  const res = await post('correlation', {x,y});
+  if (!res.success) return alert(res.error);
+  document.getElementById('corr-results').style.display='block';
+  const r = res.pearson_r;
+  const strength = Math.abs(r)>=0.9?'Very Strong':Math.abs(r)>=0.7?'Strong':Math.abs(r)>=0.5?'Moderate':Math.abs(r)>=0.3?'Weak':'Very Weak';
+  const direction = r>0?'Positive':'Negative';
+  document.getElementById('corr-metrics').innerHTML =
+    metric('Pearson r', fmt(res.pearson_r), Math.abs(r)>=0.7?'green':'gold') +
+    metric('Spearman ρ', fmt(res.spearman_r)) +
+    metric('R² (CoD)', fmt(res.r_squared), 'gold') +
+    metric('t-Statistic', fmt(res.t_stat)) +
+    metric('n', res.n);
+  document.getElementById('corr-info').innerHTML =
+    infoBox('info-blue', `<b>r = ${fmt(r)}</b> — ${strength} ${direction} linear correlation.`) +
+    infoBox('info-green', `<b>R² = ${fmt(res.r_squared)}</b> — ${(res.r_squared*100).toFixed(1)}% of variance in Y is explained by X.`);
+  const xArr = x.split(/[\s,]+/).map(Number).filter(n=>!isNaN(n));
+  const yArr = y.split(/[\s,]+/).map(Number).filter(n=>!isNaN(n));
+  createChart('corr-chart', {
+    type:'scatter',
+    data:{
+      datasets:[{
+        label:'X vs Y',
+        data:xArr.map((xi,i)=>({x:xi,y:yArr[i]})),
+        backgroundColor:'rgba(201,168,76,0.5)',
+        borderColor:palette.navy,
+        borderWidth:1.5,
+        pointRadius:5
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:palette.navy}}, title:{display:true, text:'Correlation Scatter Plot', color:palette.navy, font:{weight:'bold',size:14}}},
+      scales:{
+        x:{type:'linear', position:'bottom', ticks:{color:palette.navy}, grid:{color:'rgba(16,38,77,0.08)'}},
+        y:{ticks:{color:palette.navy}, grid:{color:'rgba(16,38,77,0.08)'}}
+      }
+    }
+  });
+  await addHistory('Correlation', `X: ${x} | Y: ${y}`, `Pearson r = ${fmt(res.pearson_r)}, Spearman ρ = ${fmt(res.spearman_r)}, R² = ${fmt(res.r_squared)}`, 'corr-chart');
+}
+
+// ── REGRESSION ───────────────────────────────────────────────
+async function calcReg() {
+  const x = document.getElementById('reg-x').value.trim();
+  const y = document.getElementById('reg-y').value.trim();
+  if (!x||!y) return alert('Please enter both X and Y values.');
+  const res = await post('regression', {x,y});
+  if (!res.success) return alert(res.error);
+  document.getElementById('reg-results').style.display='block';
+  const sign = res.intercept>=0?'+':'-';
+  document.getElementById('reg-metrics').innerHTML =
+    metric('Slope (b)', fmt(res.slope), 'gold') +
+    metric('Intercept (a)', fmt(res.intercept)) +
+    metric('r', fmt(res.r), 'green') +
+    metric('R²', fmt(res.r2), 'green') +
+    metric('SEE', fmt(res.see));
+  document.getElementById('reg-info').innerHTML =
+    infoBox('info-blue', `<b>Regression Equation: Ŷ = ${fmt(res.slope)}X ${sign} ${Math.abs(res.intercept).toFixed(4)}</b>`) +
+    infoBox('info-green', `<b>R² = ${fmt(res.r2)}</b> — the model explains ${(res.r2*100).toFixed(1)}% of the variability.`);
+  const xArr = x.split(/[\s,]+/).map(Number).filter(n=>!isNaN(n));
+  const yArr = y.split(/[\s,]+/).map(Number).filter(n=>!isNaN(n));
+  const tb = document.getElementById('reg-tbody');
+  tb.innerHTML = xArr.map((xi,i) =>
+    `<tr><td>${xi}</td><td>${yArr[i]}</td><td>${fmt(res.predicted[i])}</td><td>${fmt(res.residuals[i])}</td></tr>`
+  ).join('');
+  document.getElementById('reg-table-wrap').style.display='block';
+  const points = xArr.map((xi,i)=>({x:xi,y:yArr[i]})).sort((a,b)=>a.x-b.x);
+  const line = xArr.map((xi,i)=>({x:xi,y:res.predicted[i]})).sort((a,b)=>a.x-b.x);
+  createChart('reg-chart', {
+    data:{
+      datasets:[
+        {type:'scatter', label:'Actual Values', data:points, backgroundColor:'rgba(201,168,76,0.55)', borderColor:palette.navy, pointRadius:5},
+        {type:'line', label:'Regression Line', data:line, borderColor:palette.navy, backgroundColor:'rgba(16,38,77,0.08)', tension:0}
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{legend:{labels:{color:palette.navy}}, title:{display:true, text:'Linear Regression Graph', color:palette.navy, font:{weight:'bold',size:14}}},
+      scales:{
+        x:{type:'linear', position:'bottom', ticks:{color:palette.navy}, grid:{color:'rgba(16,38,77,0.08)'}},
+        y:{ticks:{color:palette.navy}, grid:{color:'rgba(16,38,77,0.08)'}}
+      }
+    }
+  });
+  await addHistory('Regression', `X: ${x} | Y: ${y}`, `Slope = ${fmt(res.slope)}, Intercept = ${fmt(res.intercept)}, R² = ${fmt(res.r2)}`, 'reg-chart');
+}
+
+// ── Z-TABLE ──────────────────────────────────────────────────
+function buildZTable() {
+  const cols = [0.00,0.01,0.02,0.03,0.04,0.05,0.06,0.07,0.08,0.09];
+  const rows = [];
+  for (let i=-34;i<=34;i++) rows.push((i/10).toFixed(1));
+  const tbl = document.getElementById('ztable');
+  let html = '<thead><tr><th>z</th>'+cols.map(c=>`<th>${c.toFixed(2)}</th>`).join('')+'</tr></thead><tbody>';
+  rows.forEach(r => {
+    html += `<tr><td class="z-row-head">${r}</td>`;
+    cols.forEach(c => {
+      const z = parseFloat(r)+c;
+      const p = normalCDF(z);
+      html += `<td onclick="highlightZ(${z.toFixed(2)},${p.toFixed(4)})" title="z=${z.toFixed(2)}">${p.toFixed(4)}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody>';
+  tbl.innerHTML = html;
+}
+
+function highlightZ(z, p) {
+  const box = document.getElementById('ztable-highlight');
+  box.style.display='block';
+  box.innerHTML = `<b>z = ${z}</b> → P(Z ≤ ${z}) = <b>${p}</b> &nbsp;|&nbsp; P(Z > ${z}) = <b>${(1-p).toFixed(4)}</b>`;
+}
+
+function normalCDF(z) {
+  const t=1/(1+0.2316419*Math.abs(z));
+  const d=0.3989423*Math.exp(-z*z/2);
+  const p=d*t*(0.3193815+t*(-0.3565638+t*(1.7814779+t*(-1.8212560+t*1.3302744))));
+  return z>0?1-p:p;
+}
+
+// ── T-TABLE ──────────────────────────────────────────────────
+function buildTTable() {
+  const alphas=[0.10,0.05,0.025,0.01,0.005,0.001];
+  const dfs=[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,40,60,80,100,120,1000];
+  const tCrit=(df,a)=>{
+    // Approximation using Wilson-Hilferty
+    const x=df,p=1-a;
+    const z=(()=>{
+      const t=Math.sqrt(-2*Math.log(1-p));
+      return t-(2.515517+0.802853*t+0.010328*t*t)/(1+1.432788*t+0.189269*t*t+0.001308*t*t*t);
+    })();
+    return +(z*(1+z*z/(2*x))*Math.sqrt(1+z*z/(2*x)+(z*z*z*z-5*z*z/2-1)/(8*x*x))).toFixed(4);
+  };
+  const tbl=document.getElementById('ttable');
+  let html='<thead><tr><th>df \\ α (two-tail)</th>'+alphas.map(a=>`<th>${a}</th>`).join('')+'</tr></thead><tbody>';
+  dfs.forEach(df=>{
+    html+=`<tr><td class="df-col">${df}</td>`;
+    alphas.forEach(a=>{ html+=`<td>${tCrit(df,a/2)}</td>`; });
+    html+='</tr>';
+  });
+  html+='</tbody>';
+  tbl.innerHTML=html;
+}
+
+// ── ENGAGEMENT COUNTERS ───────────────────────────────────────
+function initEngagement() {
+  const viewsKey = 'statiq_views';
+  const likesKey = 'statiq_likes';
+  const likedKey = 'statiq_liked';
+
+  let views = Number(localStorage.getItem(viewsKey) || '0');
+  views += 1;
+  localStorage.setItem(viewsKey, String(views));
+
+  const likes = Number(localStorage.getItem(likesKey) || '0');
+  const liked = localStorage.getItem(likedKey) === 'yes';
+
+  document.getElementById('view-count').textContent = views;
+  document.getElementById('like-count').textContent = likes;
+  document.getElementById('like-btn').classList.toggle('liked', liked);
+}
+
+function toggleLike() {
+  const likesKey = 'statiq_likes';
+  const likedKey = 'statiq_liked';
+  let likes = Number(localStorage.getItem(likesKey) || '0');
+  const alreadyLiked = localStorage.getItem(likedKey) === 'yes';
+
+  if (alreadyLiked) {
+    likes = Math.max(0, likes - 1);
+    localStorage.setItem(likedKey, 'no');
+  } else {
+    likes += 1;
+    localStorage.setItem(likedKey, 'yes');
+  }
+
+  localStorage.setItem(likesKey, String(likes));
+  document.getElementById('like-count').textContent = likes;
+  document.getElementById('like-btn').classList.toggle('liked', !alreadyLiked);
+}
+
+
+// ── COMMENTS, HISTORY, FILE UPLOAD & PDF REPORT ─────────────
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const HISTORY_KEY = 'statiq_calc_history';
+const COMMENT_KEY = 'statiq_comments';
+
+function openModal(id){ document.getElementById(id).classList.add('show'); }
+function closeModal(id){ document.getElementById(id).classList.remove('show'); }
+function overlayClose(e,id){ if(e.target.id===id) closeModal(id); }
+
+function getHistory(){ try{return JSON.parse(localStorage.getItem(HISTORY_KEY)||'[]');}catch{return [];} }
+function setHistory(items){ localStorage.setItem(HISTORY_KEY, JSON.stringify(items)); }
+function cloneChartConfigSafe(config){
+  try { return JSON.parse(JSON.stringify(config)); } catch(e) { return null; }
+}
+function wait(ms){ return new Promise(resolve => setTimeout(resolve, ms)); }
+async function captureChartDataUrl(chartId){
+  if (!chartId) return '';
+  await wait(350);
+  const chart = charts[chartId];
+  const canvas = document.getElementById(chartId);
+  if (chart) {
+    try { chart.update('none'); } catch(e) {}
+  }
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  try {
+    if (chart && typeof chart.toBase64Image === 'function') {
+      const img = chart.toBase64Image('image/jpeg', 1.0);
+      if (img && img.startsWith('data:image/')) return img;
+    }
+  } catch(e) {}
+  try {
+    if (canvas) return canvas.toDataURL('image/jpeg', 0.98);
+  } catch(e) {}
+  return '';
+}
+async function addHistory(section, input, summary, chartId=''){
+  const items = getHistory();
+  let chartImage = '';
+  let chartTitle = '';
+  let chartConfig = null;
+  if (chartId) {
+    const canvas = document.getElementById(chartId);
+    const chart = charts[chartId];
+    chartImage = await captureChartDataUrl(chartId);
+    chartTitle = canvas?.closest('.panel')?.querySelector('.panel-title')?.textContent || section + ' Graph';
+    if (chart && chart.config) {
+      chartConfig = cloneChartConfigSafe(chart.config);
+    }
+  }
+  items.unshift({section,input,summary,time:new Date().toLocaleString(),chartImage,chartTitle,chartConfig});
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(items.slice(0,30)));
+  renderHistory();
+}
+function renderHistory(){
+  const box = document.getElementById('history-list');
+  if(!box) return;
+  const items = getHistory();
+  box.innerHTML = items.length ? items.map(item => `
+    <div class="history-item">
+      <div class="history-meta">${item.time} · ${item.section}</div>
+      <div class="history-text"><b>Input:</b> ${item.input}<br><b>Result:</b> ${item.summary}</div>
+    </div>`).join('') : '<div class="info-box info-amber">No calculation history yet.</div>';
+}
+function openHistoryModal(){ renderHistory(); openModal('history-modal'); }
+function clearHistory(){ localStorage.removeItem(HISTORY_KEY); renderHistory(); }
+
+function getComments(){ try{return JSON.parse(localStorage.getItem(COMMENT_KEY)||'[]');}catch{return [];} }
+function setComments(items){ localStorage.setItem(COMMENT_KEY, JSON.stringify(items)); }
+function renderComments(){
+  const box = document.getElementById('comment-list');
+  if(!box) return;
+  const items = getComments();
+  box.innerHTML = items.length ? items.map(item => `
+    <div class="comment-item">
+      <div class="comment-meta">${item.name} · ${item.time}</div>
+      <div class="comment-text">${item.text}</div>
+    </div>`).join('') : '<div class="info-box info-amber">No feedback yet. Be the first to share one.</div>';
+}
+function clearCommentForm(){ document.getElementById('comment-name').value=''; document.getElementById('comment-text').value=''; }
+async function submitComment(){
+  const name = document.getElementById('comment-name').value.trim() || 'Anonymous';
+  const text = document.getElementById('comment-text').value.trim();
+  if(!text) return alert('Please enter your feedback.');
+  const items = getComments();
+  const entry = {name,text,time:new Date().toLocaleString()};
+  items.unshift(entry);
+  setComments(items.slice(0,20));
+  clearCommentForm();
+  renderComments();
+  const statusBox = document.getElementById('comment-list');
+  try {
+    await sendFeedbackEmail(name, text, entry.time);
+    statusBox.insertAdjacentHTML('afterbegin', '<div class="info-box info-green">Feedback submitted and email sent successfully.</div>');
+  } catch (err) {
+    statusBox.insertAdjacentHTML('afterbegin', '<div class="info-box info-amber">Feedback saved locally. Email sending may require first-time activation for the inbox service.</div>');
+  }
+}
+
+
+async function extractNumbersFromPdf(file){
+  const buffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({data:buffer}).promise;
+  let text = '';
+  for(let pageNum=1; pageNum<=pdf.numPages; pageNum++){
+    const page = await pdf.getPage(pageNum);
+    const content = await page.getTextContent();
+    text += ' ' + content.items.map(item => item.str).join(' ');
+  }
+  return (text.match(/-?\d*\.?\d+/g)||[]).join(', ');
+}
+async function handleSingleFileUpload(event, targetId){
+  const file = event.target.files[0];
+  if(!file) return;
+  try{
+    let content='';
+    if(file.name.toLowerCase().endsWith('.pdf')){
+      content = await extractNumbersFromPdf(file);
+    } else {
+      content = await file.text();
+      content = (content.match(/-?\d*\.?\d+/g)||[]).join(', ');
+    }
+    if(!content) return alert('No numeric values found in file.');
+    document.getElementById(targetId).value = content;
+  }catch(err){
+    alert('Unable to read file. Please try CSV, TXT or a readable PDF.');
+  }
+}
+async function handlePairFileUpload(event, xId, yId){
+  const file = event.target.files[0];
+  if(!file) return;
+  try{
+    const text = await file.text();
+    const rows = text.split(/\r?\n/).map(r=>r.trim()).filter(Boolean);
+    const x=[], y=[];
+    rows.forEach(row=>{
+      const parts = row.split(/[;,\s]+/).filter(Boolean);
+      if(parts.length >= 2 && !isNaN(Number(parts[0])) && !isNaN(Number(parts[1]))){
+        x.push(parts[0]); y.push(parts[1]);
+      }
+    });
+    if(!x.length) return alert('Could not find two numeric columns in this file.');
+    document.getElementById(xId).value = x.join(', ');
+    document.getElementById(yId).value = y.join(', ');
+  }catch(err){
+    alert('Unable to read uploaded file.');
+  }
+}
+
+async function renderStoredChartImage(item){
+  if (item.chartImage) return item.chartImage;
+  if (!item.chartConfig) return '';
+  const wrap = document.createElement('div');
+  wrap.style.position = 'fixed';
+  wrap.style.left = '-99999px';
+  wrap.style.top = '0';
+  wrap.style.width = '900px';
+  wrap.style.height = '420px';
+  wrap.style.background = '#ffffff';
+  const canvas = document.createElement('canvas');
+  canvas.width = 900;
+  canvas.height = 420;
+  wrap.appendChild(canvas);
+  document.body.appendChild(wrap);
+  let chart;
+  try {
+    const cfg = cloneChartConfigSafe(item.chartConfig) || {};
+    cfg.options = cfg.options || {};
+    cfg.options.responsive = false;
+    cfg.options.maintainAspectRatio = false;
+    cfg.options.animation = false;
+    cfg.plugins = (cfg.plugins || []).concat([{
+      id: 'pdfWhiteBg',
+      beforeDraw(c) {
+        const {ctx, width, height} = c;
+        ctx.save();
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
+        ctx.restore();
+      }
+    }]);
+    chart = new Chart(canvas.getContext('2d'), cfg);
+    await new Promise(r => setTimeout(r, 120));
+    return canvas.toDataURL('image/png', 1.0);
+  } catch (e) {
+    return '';
+  } finally {
+    if (chart) chart.destroy();
+    wrap.remove();
+  }
+}
+
+async function downloadHistoryPdf(){
+  const items = getHistory();
+  if(!items.length) return alert('No calculation history available to download.');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF('p','mm','a4');
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const margin = 14;
+  const usableW = pageW - margin * 2;
+
+  for (const [idx, item] of items.entries()) {
+    if (idx > 0) doc.addPage();
+    let y = 18;
+
+    doc.setFontSize(16);
+    doc.text('StatIQ Calculation Report', margin, y);
+    y += 8;
+    doc.setFontSize(11);
+    doc.text('National Engineering College · AI & Data Science · Academic Year 2024–2028', margin, y);
+    y += 12;
+
+    doc.setFontSize(13);
+    doc.text(`${idx+1}. ${item.section}`, margin, y);
+    y += 8;
+
+    doc.setFontSize(11);
+    const metaLines = doc.splitTextToSize(`Date & Time: ${item.time}
+Input: ${item.input}
+Result: ${item.summary}`, usableW);
+    doc.text(metaLines, margin, y);
+    y += metaLines.length * 6 + 6;
+
+    const chartImg = item.chartImage || await renderStoredChartImage(item);
+    if (chartImg) {
+      doc.setFontSize(12);
+      doc.text(item.chartTitle || `${item.section} Graph`, margin, y);
+      y += 6;
+      const imgHeight = 82;
+      if (y + imgHeight > pageH - margin) { doc.addPage(); y = 20; }
+      const imgFormat = chartImg.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
+      doc.addImage(chartImg, imgFormat, margin, y, usableW, imgHeight);
+    } else {
+      doc.setFontSize(11);
+      doc.text('Graph unavailable for this older history item. Please recalculate once and download again.', margin, y);
+    }
+  }
+
+  doc.save('StatIQ_Report.pdf');
+}
+
+// ── INIT ─────────────────────────────────────────────────────
+buildZTable();
+buildTTable();
+initEngagement();
+renderComments();
+renderHistory();
+</script>
+</body>
+</html>

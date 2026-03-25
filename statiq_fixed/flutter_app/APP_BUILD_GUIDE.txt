@@ -1,0 +1,140 @@
+# StatIQ Flutter App — Build & Play Store Guide
+
+## WHAT THIS APP DOES
+- Shows a splash screen with NEC logo + college details
+- Opens your live StatIQ website (statiq-calculator.onrender.com) inside the app
+- Works fully offline-aware with error screen
+- Gold/navy theme matching your website
+
+---
+
+## STEP 1 — Install Flutter (if not installed)
+1. Go to flutter.dev/docs/get-started/install
+2. Download Flutter for Windows
+3. Extract to C:\flutter
+4. Add C:\flutter\bin to PATH environment variable
+5. Run: flutter doctor (fix any issues shown)
+
+---
+
+## STEP 2 — Add NEC logo to app
+1. Copy your NEC logo image (PNG format) to:
+   flutter_app/assets/images/nec_logo.png
+2. The splash screen will show it automatically
+
+---
+
+## STEP 3 — Build Debug APK (test on your phone first)
+Open VS Code terminal:
+
+  cd flutter_app
+  flutter pub get
+  flutter build apk --debug
+
+APK location: flutter_app/build/app/outputs/flutter-apk/app-debug.apk
+Share via WhatsApp to test on phones.
+
+---
+
+## STEP 4 — Build Release APK (for Play Store)
+
+### 4a. Generate a keystore (do this ONCE only — keep it safe!)
+  keytool -genkey -v -keystore upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+
+Fill in the details when asked:
+  - First name: Harshitha
+  - Org: National Engineering College
+  - City: Kovilpatti
+  - State: Tamil Nadu
+  - Country: IN
+  - Password: choose a strong password (remember it!)
+
+### 4b. Create key.properties file in flutter_app/android/
+Create file: flutter_app/android/key.properties
+Contents:
+  storePassword=YOUR_PASSWORD
+  keyPassword=YOUR_PASSWORD
+  keyAlias=upload
+  storeFile=../upload-keystore.jks
+
+### 4c. Update android/app/build.gradle to use the keystore
+Add before android { block:
+  def keystoreProperties = new Properties()
+  def keystorePropertiesFile = rootProject.file('key.properties')
+  if (keystorePropertiesFile.exists()) {
+      keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+  }
+
+Replace signingConfigs in release block with:
+  signingConfig {
+      keyAlias keystoreProperties['keyAlias']
+      keyPassword keystoreProperties['keyPassword']
+      storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+      storePassword keystoreProperties['storePassword']
+  }
+
+### 4d. Build release APK
+  flutter build apk --release
+
+APK: flutter_app/build/app/outputs/flutter-apk/app-release.apk
+
+### 4e. Build App Bundle (required for Play Store)
+  flutter build appbundle --release
+
+AAB: flutter_app/build/app/outputs/bundle/release/app-release.aab
+
+---
+
+## STEP 5 — Google Play Store
+
+### 5a. Create Developer Account
+1. Go to play.google.com/console
+2. Sign in with Google account
+3. Pay $25 one-time registration fee
+4. Complete account setup
+
+### 5b. Create new app
+1. Click "Create app"
+2. App name: StatIQ
+3. Default language: English
+4. App or Game: App
+5. Free or Paid: Free
+
+### 5c. Fill in Store Listing
+- Title: StatIQ - Statistics Calculator
+- Short description: Complete statistics calculator for Data Science students
+- Full description: 
+  StatIQ is a comprehensive statistics calculator developed at National 
+  Engineering College for the course "Fundamentals of Data Science and 
+  Analytics" (Course Code: 23AD46C). Covers frequency distributions, 
+  averages, variability, IQR, outliers, normal distribution, Z-scores, 
+  correlation, regression and multiple regression.
+
+### 5d. Upload screenshots
+Take screenshots on your phone and upload (min 2 required)
+
+### 5e. Upload AAB file
+Content ratings → fill questionnaire
+Upload app-release.aab to Production track
+
+### 5f. Submit for review
+Google reviews in 3-7 days → then it goes LIVE!
+
+---
+
+## APP DETAILS
+- Package: com.nec.statiq
+- App name: StatIQ
+- Version: 1.0.0
+- Min Android: 5.0 (API 21) — covers 99% of devices
+- Backend: https://statiq-calculator.onrender.com
+
+---
+
+## SHARE APK DIRECTLY (skip Play Store)
+If you just want to share with classmates NOW:
+1. Build debug APK: flutter build apk --debug
+2. Find APK: build/app/outputs/flutter-apk/app-debug.apk
+3. Share via WhatsApp, Google Drive, or email
+4. Recipients enable "Install from unknown sources" in phone settings
+5. Install and use!
